@@ -210,7 +210,11 @@ Run the agent in production:
 uv run agent.py start
 ```
 
-## Configuration
+## Local Model Deployment Guide
+
+For detailed instructions on deploying all models locally (LLM + TTS), see the [DEPLOYMENT.md](DEPLOYMENT.md) guide.
+
+Quick overview of supported providers:
 
 ### Local LLM Setup
 
