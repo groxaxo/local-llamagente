@@ -22,7 +22,6 @@ class Assistant(Agent):
 
 async def entrypoint(ctx: agents.JobContext):
     # Configure LLM based on provider (supports OpenAI-compatible APIs)
-    llm_provider = os.getenv("LLM_PROVIDER", "openai")
     llm_base_url = os.getenv("LLM_BASE_URL")
     llm_model = os.getenv("LLM_MODEL", "gpt-4o-mini")
     llm_api_key = os.getenv("OPENAI_API_KEY", "not-needed")
@@ -36,8 +35,11 @@ async def entrypoint(ctx: agents.JobContext):
             api_key=llm_api_key,
         )
     else:
-        # Default OpenAI
-        llm = openai.LLM(model=llm_model)
+        # Default OpenAI (explicitly pass API key)
+        llm = openai.LLM(
+            model=llm_model,
+            api_key=llm_api_key,
+        )
     
     # Configure TTS (KaniTTS server with Spanish model)
     tts_base_url = os.getenv("KANI_BASE_URL", "http://localhost:8000/v1")
