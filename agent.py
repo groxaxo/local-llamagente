@@ -21,18 +21,39 @@ class Assistant(Agent):
 
 
 async def entrypoint(ctx: agents.JobContext):
+    # Configure LLM based on provider (supports OpenAI-compatible APIs)
+    llm_provider = os.getenv("LLM_PROVIDER", "openai")
+    llm_base_url = os.getenv("LLM_BASE_URL")
+    llm_model = os.getenv("LLM_MODEL", "gpt-4o-mini")
+    llm_api_key = os.getenv("OPENAI_API_KEY", "not-needed")
+    
+    # Create LLM instance (all providers use OpenAI-compatible interface)
+    if llm_base_url:
+        # Local providers: vLLM, Ollama, LM Studio (all OpenAI-compatible)
+        llm = openai.LLM(
+            model=llm_model,
+            base_url=llm_base_url,
+            api_key=llm_api_key,
+        )
+    else:
+        # Default OpenAI
+        llm = openai.LLM(model=llm_model)
+    
+    # Configure TTS (KaniTTS server with Spanish model)
+    tts_base_url = os.getenv("KANI_BASE_URL", "http://localhost:8000/v1")
+    tts_model = os.getenv("TTS_MODEL", "nineninesix/kani-tts-400m-es")
+    tts_voice = os.getenv("TTS_VOICE", "andrew")
+    
     session = AgentSession(
         stt=deepgram.STTv2(
             model="flux-general-en",
             eager_eot_threshold=0.4,
         ),
-        llm=openai.LLM(
-            model="gpt-4o-mini"
-        ),
-        tts = openai.TTS(
-            base_url=os.getenv("KANI_BASE_URL", "http://localhost:8000/v1"),
-            model="gpt-4o-mini-tts",
-            voice="andrew",
+        llm=llm,
+        tts=openai.TTS(
+            base_url=tts_base_url,
+            model=tts_model,
+            voice=tts_voice,
             response_format="pcm"
         ),
         vad=silero.VAD.load(),
