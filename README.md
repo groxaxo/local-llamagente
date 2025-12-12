@@ -5,8 +5,12 @@ A real-time voice AI assistant built with LiveKit Agents framework, featuring sp
 ## Features
 
 - **Speech-to-Text**: Deepgram STT with Flux General EN model
-- **Language Model**: OpenAI GPT-4o-mini for natural conversation
-- **Text-to-Speech**: OpenAI-compatible server using KaniTTS (https://github.com/nineninesix-ai/kanitts-vllm)
+- **Language Model**: Supports multiple local and cloud LLM providers:
+  - OpenAI GPT-4o-mini (cloud)
+  - vLLM with Qwen 2.5 Instruct (local)
+  - Ollama (local)
+  - LM Studio (local)
+- **Text-to-Speech**: KaniTTS Spanish model (nineninesix/kani-tts-400m-es) via OpenAI-compatible server
 - **Voice Activity Detection**: Silero VAD for accurate speech detection
 - **Turn Detection**: Multilingual turn detection for natural conversations
 - **Noise Cancellation**: Background voice cancellation (BVC) for clear audio
@@ -19,7 +23,7 @@ A real-time voice AI assistant built with LiveKit Agents framework, featuring sp
 - API keys for:
   - LiveKit (API key, secret, and URL)
   - Deepgram (for STT)
-  - OpenAI (for LLM)
+  - OpenAI (for cloud LLM option) OR a local LLM server (vLLM, Ollama, or LM Studio)
 
 ## Installation
 
@@ -72,8 +76,35 @@ LIVEKIT_API_KEY=your_livekit_api_key
 LIVEKIT_API_SECRET=your_livekit_api_secret
 LIVEKIT_URL=wss://your-project.livekit.cloud
 DEEPGRAM_API_KEY=your_deepgram_api_key
+
+# LLM Configuration - Choose one option:
+# Option 1: OpenAI (Cloud)
 OPENAI_API_KEY=your_openai_api_key
+LLM_PROVIDER=openai
+LLM_MODEL=gpt-4o-mini
+
+# Option 2: vLLM (Local)
+# LLM_PROVIDER=vllm
+# LLM_BASE_URL=http://localhost:8001/v1
+# LLM_MODEL=Qwen/Qwen2.5-7B-Instruct
+# OPENAI_API_KEY=not-needed
+
+# Option 3: Ollama (Local)
+# LLM_PROVIDER=ollama
+# LLM_BASE_URL=http://localhost:11434/v1
+# LLM_MODEL=qwen2.5:7b-instruct
+# OPENAI_API_KEY=not-needed
+
+# Option 4: LM Studio (Local)
+# LLM_PROVIDER=lmstudio
+# LLM_BASE_URL=http://localhost:1234/v1
+# LLM_MODEL=qwen2.5-7b-instruct
+# OPENAI_API_KEY=not-needed
+
+# TTS Configuration (KaniTTS)
 KANI_BASE_URL=http://localhost:8000/v1
+TTS_MODEL=nineninesix/kani-tts-400m-es
+TTS_VOICE=andrew
 ```
 
 **Quick setup with LiveKit CLI:**
@@ -92,6 +123,63 @@ uv run agent.py download-files
 ```
 
 ## Usage
+
+### Quick Start Examples
+
+Here are some common configurations to get you started quickly:
+
+**Example 1: Fully Local Setup (Ollama + KaniTTS)**
+```env
+# .env.local
+LIVEKIT_API_KEY=your_key
+LIVEKIT_API_SECRET=your_secret
+LIVEKIT_URL=wss://your-project.livekit.cloud
+DEEPGRAM_API_KEY=your_deepgram_key
+
+LLM_PROVIDER=ollama
+LLM_BASE_URL=http://localhost:11434/v1
+LLM_MODEL=qwen2.5:7b-instruct
+OPENAI_API_KEY=not-needed
+
+KANI_BASE_URL=http://localhost:8000/v1
+TTS_MODEL=nineninesix/kani-tts-400m-es
+TTS_VOICE=andrew
+```
+
+**Example 2: vLLM for Performance + KaniTTS**
+```env
+# .env.local
+LIVEKIT_API_KEY=your_key
+LIVEKIT_API_SECRET=your_secret
+LIVEKIT_URL=wss://your-project.livekit.cloud
+DEEPGRAM_API_KEY=your_deepgram_key
+
+LLM_PROVIDER=vllm
+LLM_BASE_URL=http://localhost:8001/v1
+LLM_MODEL=Qwen/Qwen2.5-7B-Instruct
+OPENAI_API_KEY=not-needed
+
+KANI_BASE_URL=http://localhost:8000/v1
+TTS_MODEL=nineninesix/kani-tts-400m-es
+TTS_VOICE=andrew
+```
+
+**Example 3: Cloud OpenAI + Local KaniTTS**
+```env
+# .env.local
+LIVEKIT_API_KEY=your_key
+LIVEKIT_API_SECRET=your_secret
+LIVEKIT_URL=wss://your-project.livekit.cloud
+DEEPGRAM_API_KEY=your_deepgram_key
+
+LLM_PROVIDER=openai
+LLM_MODEL=gpt-4o-mini
+OPENAI_API_KEY=your_openai_key
+
+KANI_BASE_URL=http://localhost:8000/v1
+TTS_MODEL=nineninesix/kani-tts-400m-es
+TTS_VOICE=andrew
+```
 
 ### Development Mode
 
@@ -122,24 +210,144 @@ Run the agent in production:
 uv run agent.py start
 ```
 
-## Configuration
+## Local Model Deployment Guide
 
-### Custom TTS Server
+For detailed instructions on deploying all models locally (LLM + TTS), see the [DEPLOYMENT.md](DEPLOYMENT.md) guide.
 
-This project uses a custom TTS server instead of the default OpenAI TTS. The TTS server URL is configured via the `KANI_BASE_URL` environment variable, which defaults to `http://localhost:8000/v1` if not set.
+Quick overview of supported providers:
 
-**To use the local TTS server:**
-1. Set `KANI_BASE_URL` in your `.env.local` file (or leave unset to use the default)
-2. Ensure your TTS server is running at the specified URL
-3. The server should be OpenAI-compatible (accepts same API format)
+### Local LLM Setup
 
-Check our FastAPI implementation here: https://github.com/nineninesix-ai/kanitts-vllm
+This agent supports multiple LLM backends, all using OpenAI-compatible APIs. Choose the option that best fits your needs:
+
+#### Option 1: vLLM (Recommended for Performance)
+
+vLLM provides high-throughput serving for LLMs with optimized performance.
+
+**Installation:**
+```bash
+pip install vllm
+```
+
+**Deploy Qwen 2.5 Instruct:**
+```bash
+# Start vLLM server with Qwen 2.5 7B Instruct
+python -m vllm.entrypoints.openai.api_server \
+    --model Qwen/Qwen2.5-7B-Instruct \
+    --port 8001 \
+    --served-model-name Qwen/Qwen2.5-7B-Instruct
+
+# For smaller models (3B):
+# python -m vllm.entrypoints.openai.api_server \
+#     --model Qwen/Qwen2.5-3B-Instruct \
+#     --port 8001
+```
+
+**Configuration in `.env.local`:**
+```env
+LLM_PROVIDER=vllm
+LLM_BASE_URL=http://localhost:8001/v1
+LLM_MODEL=Qwen/Qwen2.5-7B-Instruct
+OPENAI_API_KEY=not-needed
+```
+
+#### Option 2: Ollama (Easiest Setup)
+
+Ollama provides the simplest way to run local LLMs.
+
+**Installation:**
+Visit [ollama.ai](https://ollama.ai/) and follow the installation instructions for your OS.
+
+**Deploy Qwen 2.5 Instruct:**
+```bash
+# Pull and run Qwen 2.5 7B Instruct
+ollama pull qwen2.5:7b-instruct
+
+# Start Ollama server (usually runs automatically)
+ollama serve
+```
+
+**Configuration in `.env.local`:**
+```env
+LLM_PROVIDER=ollama
+LLM_BASE_URL=http://localhost:11434/v1
+LLM_MODEL=qwen2.5:7b-instruct
+OPENAI_API_KEY=not-needed
+```
+
+**Note:** Ollama requires OpenAI compatibility to be enabled. Make sure you're using Ollama v0.1.0 or later which includes the `/v1` OpenAI-compatible endpoint.
+
+#### Option 3: LM Studio (Best for Desktop)
+
+LM Studio provides a user-friendly desktop application for running local LLMs.
+
+**Installation:**
+1. Download LM Studio from [lmstudio.ai](https://lmstudio.ai/)
+2. Install and launch the application
+3. Download a model (search for "Qwen 2.5 Instruct" in the app)
+4. Start the local server from the "Local Server" tab (default port: 1234)
+
+**Configuration in `.env.local`:**
+```env
+LLM_PROVIDER=lmstudio
+LLM_BASE_URL=http://localhost:1234/v1
+LLM_MODEL=qwen2.5-7b-instruct
+OPENAI_API_KEY=not-needed
+```
+
+**Note:** The exact model name may vary based on what you've loaded in LM Studio. Check the "Local Server" tab for the correct model identifier.
+
+### Custom TTS Server (KaniTTS Spanish Model)
+
+This project uses the KaniTTS Spanish model (`nineninesix/kani-tts-400m-es`) for text-to-speech, deployed via an OpenAI-compatible server.
+
+**Setup KaniTTS Server:**
+
+1. Clone the KaniTTS vLLM repository:
+```bash
+git clone https://github.com/nineninesix-ai/kanitts-vllm.git
+cd kanitts-vllm
+```
+
+2. Install dependencies:
+```bash
+pip install -r requirements.txt
+```
+
+3. Start the TTS server with the Spanish model:
+```bash
+python server.py --model nineninesix/kani-tts-400m-es --port 8000
+```
+
+4. The server will be available at `http://localhost:8000/v1`
+
+**Configuration in `.env.local`:**
+```env
+KANI_BASE_URL=http://localhost:8000/v1
+TTS_MODEL=nineninesix/kani-tts-400m-es
+TTS_VOICE=andrew
+```
+
+**Verify TTS Server:**
+```bash
+curl http://localhost:8000/v1/audio/speech \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "nineninesix/kani-tts-400m-es",
+    "input": "Hola, soy tu asistente de voz.",
+    "voice": "andrew"
+  }' \
+  --output test.wav
+```
+
+Check our reference implementation: https://github.com/nineninesix-ai/kanitts-vllm
 
 ### Audio Models Configuration
 
 Current configuration:
 - **STT**: Deepgram Flux General EN with 0.4s eager end-of-turn threshold
-- **LLM**: GPT-4o-mini
+- **LLM**: Configurable (OpenAI, vLLM, Ollama, or LM Studio)
+- **TTS**: KaniTTS Spanish model (nineninesix/kani-tts-400m-es)
 - **VAD**: Silero VAD
 - **Turn Detection**: Multilingual model
 - **Noise Cancellation**: BVC (recommended for telephony)
@@ -192,7 +400,7 @@ After deployment, your agent will be available through:
 **Agent won't start:**
 - Verify all environment variables are set correctly in `.env.local`
 - Ensure model files are downloaded: `uv run agent.py download-files`
-- Check that your API keys are valid
+- Check that your API keys are valid (or set to "not-needed" for local LLMs)
 
 **No audio in/out:**
 - Verify your microphone/speaker permissions
@@ -200,9 +408,25 @@ After deployment, your agent will be available through:
 - Ensure noise cancellation is properly configured
 
 **TTS not working:**
-- Ensure your local TTS server is running on port 8000
+- Ensure your local KaniTTS server is running on port 8000 (or configured port)
 - Check server logs for errors
 - Verify the server implements OpenAI-compatible API
+- Test the TTS endpoint with curl (see Configuration section)
+
+**LLM not responding:**
+- For local LLMs, ensure the server is running:
+  - vLLM: Check `http://localhost:8001/v1/models`
+  - Ollama: Check `http://localhost:11434/v1/models`
+  - LM Studio: Verify server is started in the application
+- Check `LLM_BASE_URL` is correctly set in `.env.local`
+- Verify the model name matches what's deployed
+- For OpenAI, check your API key is valid and has credits
+
+**Model loading issues:**
+- Ensure you have enough GPU/CPU memory for the selected model
+- For Qwen 2.5 7B: Recommended 16GB+ RAM, 8GB+ VRAM
+- For Qwen 2.5 3B: Recommended 8GB+ RAM, 4GB+ VRAM
+- Consider using quantized models (Q4, Q5) for lower memory requirements
 
 ## License
 
