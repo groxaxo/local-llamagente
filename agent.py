@@ -22,8 +22,8 @@ class Assistant(Agent):
 
 async def entrypoint(ctx: agents.JobContext):
     # Configure LLM based on provider (supports OpenAI-compatible APIs)
-    llm_base_url = os.getenv("LLM_BASE_URL")
-    llm_model = os.getenv("LLM_MODEL", "gpt-4o-mini")
+    llm_base_url = os.getenv("LLM_BASE_URL", "https://api.deepseek.com")
+    llm_model = os.getenv("LLM_MODEL", "deepseek-chat")
     llm_api_key = os.getenv("OPENAI_API_KEY", "not-needed")
     
     # Create LLM instance (all providers use OpenAI-compatible interface)

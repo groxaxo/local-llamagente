@@ -1,11 +1,20 @@
-# Voice AI Agent with KaniTTS
+# Voice AI Agent with DeepSeek Chat
 
-A real-time voice AI assistant built with LiveKit Agents framework, featuring speech-to-text, language processing, and text-to-speech capabilities.
+A real-time voice AI assistant built with LiveKit Agents framework, featuring speech-to-text, language processing, and text-to-speech capabilities. Now with **DeepSeek Chat** as the default LLM and an **exquisite web frontend**!
+
+## ✨ New Features
+
+- 🎨 **Beautiful Web Frontend** - Modern, responsive UI with real-time conversation display
+- 🤖 **DeepSeek Chat** - Powerful language model as default (faster and more cost-effective)
+- 🚀 **Auto Installer** - One-command installation for Linux, macOS, and Windows
+- 📊 **Audio Visualization** - Live audio level visualization in the frontend
+- ⚙️ **Easy Configuration** - Simple web-based setup for all settings
 
 ## Features
 
 - **Speech-to-Text**: Deepgram STT with Flux General EN model
 - **Language Model**: Supports multiple local and cloud LLM providers:
+  - **DeepSeek Chat (default)** - Fast, intelligent, cost-effective
   - OpenAI GPT-4o-mini (cloud)
   - vLLM with Qwen 2.5 Instruct (local)
   - Ollama (local)
@@ -14,20 +23,54 @@ A real-time voice AI assistant built with LiveKit Agents framework, featuring sp
 - **Voice Activity Detection**: Silero VAD for accurate speech detection
 - **Turn Detection**: Multilingual turn detection for natural conversations
 - **Noise Cancellation**: Background voice cancellation (BVC) for clear audio
+- **Web Frontend**: Beautiful, responsive UI with real-time features
 
 ## Prerequisites
 
 - Python ≥ 3.10
-- [uv](https://docs.astral.sh/uv/) package manager
+- [uv](https://docs.astral.sh/uv/) package manager (auto-installed by installer)
 - LiveKit Cloud account ([sign up for free](https://cloud.livekit.io/))
 - API keys for:
   - LiveKit (API key, secret, and URL)
   - Deepgram (for STT)
-  - OpenAI (for cloud LLM option) OR a local LLM server (vLLM, Ollama, or LM Studio)
+  - DeepSeek (for default LLM) OR OpenAI OR a local LLM server (vLLM, Ollama, or LM Studio)
 
-## Installation
+## Quick Start (Auto Installer)
 
-### 1. Install LiveKit CLI
+### Linux / macOS
+
+```bash
+git clone https://github.com/groxaxo/local-llamagente.git
+cd local-llamagente
+chmod +x install.sh
+./install.sh
+```
+
+### Windows
+
+```bash
+git clone https://github.com/groxaxo/local-llamagente.git
+cd local-llamagente
+install.bat
+```
+
+The auto installer will:
+- ✅ Check Python version
+- ✅ Install uv package manager
+- ✅ Install LiveKit CLI
+- ✅ Install all dependencies
+- ✅ Download required model files
+- ✅ Set up environment variables
+- ✅ Guide you through API key configuration
+
+After installation:
+1. Configure your API keys in `.env.local`
+2. Start the agent: `uv run agent.py dev`
+3. Open the frontend: `open frontend/index.html`
+
+## Manual Installation
+
+### 1. Install LiveKit CLI (if not using auto installer)
 
 **macOS:**
 ```bash
@@ -78,24 +121,31 @@ LIVEKIT_URL=wss://your-project.livekit.cloud
 DEEPGRAM_API_KEY=your_deepgram_api_key
 
 # LLM Configuration - Choose one option:
-# Option 1: OpenAI (Cloud)
-OPENAI_API_KEY=your_openai_api_key
-LLM_PROVIDER=openai
-LLM_MODEL=gpt-4o-mini
+# Option 1: DeepSeek Chat (Default - Recommended)
+OPENAI_API_KEY=your_deepseek_api_key
+LLM_PROVIDER=deepseek
+LLM_BASE_URL=https://api.deepseek.com
+LLM_MODEL=deepseek-chat
 
-# Option 2: vLLM (Local)
+# Option 2: OpenAI (Cloud)
+# OPENAI_API_KEY=your_openai_api_key
+# LLM_PROVIDER=openai
+# LLM_BASE_URL=https://api.openai.com/v1
+# LLM_MODEL=gpt-4o-mini
+
+# Option 3: vLLM (Local)
 # LLM_PROVIDER=vllm
 # LLM_BASE_URL=http://localhost:8001/v1
 # LLM_MODEL=Qwen/Qwen2.5-7B-Instruct
 # OPENAI_API_KEY=not-needed
 
-# Option 3: Ollama (Local)
+# Option 4: Ollama (Local)
 # LLM_PROVIDER=ollama
 # LLM_BASE_URL=http://localhost:11434/v1
 # LLM_MODEL=qwen2.5:7b-instruct
 # OPENAI_API_KEY=not-needed
 
-# Option 4: LM Studio (Local)
+# Option 5: LM Studio (Local)
 # LLM_PROVIDER=lmstudio
 # LLM_BASE_URL=http://localhost:1234/v1
 # LLM_MODEL=qwen2.5-7b-instruct
@@ -106,6 +156,11 @@ KANI_BASE_URL=http://localhost:8000/v1
 TTS_MODEL=nineninesix/kani-tts-400m-es
 TTS_VOICE=andrew
 ```
+
+**Get your DeepSeek API key:**
+1. Visit [DeepSeek Platform](https://platform.deepseek.com/)
+2. Sign up for an account
+3. Generate an API key from the dashboard
 
 **Quick setup with LiveKit CLI:**
 ```bash
@@ -122,13 +177,80 @@ Download required model files (VAD, turn detection, etc.):
 uv run agent.py download-files
 ```
 
+## Web Frontend
+
+This project includes a beautiful, modern web interface for interacting with the voice assistant.
+
+### Features
+
+- 🎨 Modern, responsive design with smooth animations
+- 🎙️ Push-to-talk microphone control
+- 📊 Real-time audio visualization
+- 💬 Live conversation display
+- ⚙️ Easy configuration panel
+- 📱 Works on desktop, tablet, and mobile
+
+### Using the Frontend
+
+1. **Start the backend agent**:
+   ```bash
+   uv run agent.py dev
+   ```
+
+2. **Open the frontend**:
+   
+   **Quick method (for testing):**
+   ```bash
+   # macOS
+   open frontend/index.html
+   
+   # Linux
+   xdg-open frontend/index.html
+   
+   # Windows
+   start frontend/index.html
+   ```
+   
+   **Recommended method (with local server):**
+   ```bash
+   cd frontend
+   python3 -m http.server 8080
+   # Then open http://localhost:8080 in your browser
+   ```
+
+3. **Configure and connect**:
+   - Enter your LiveKit URL
+   - Set room name and participant name
+   - Click "Connect"
+   - Use push-to-talk to speak with the assistant
+
+For detailed frontend documentation, see [frontend/README.md](frontend/README.md).
+
 ## Usage
 
 ### Quick Start Examples
 
 Here are some common configurations to get you started quickly:
 
-**Example 1: Fully Local Setup (Ollama + KaniTTS)**
+**Example 1: DeepSeek Chat (Default - Recommended)**
+```env
+# .env.local
+LIVEKIT_API_KEY=your_key
+LIVEKIT_API_SECRET=your_secret
+LIVEKIT_URL=wss://your-project.livekit.cloud
+DEEPGRAM_API_KEY=your_deepgram_key
+
+LLM_PROVIDER=deepseek
+LLM_BASE_URL=https://api.deepseek.com
+LLM_MODEL=deepseek-chat
+OPENAI_API_KEY=your_deepseek_api_key
+
+KANI_BASE_URL=http://localhost:8000/v1
+TTS_MODEL=nineninesix/kani-tts-400m-es
+TTS_VOICE=andrew
+```
+
+**Example 2: Fully Local Setup (Ollama + KaniTTS)**
 ```env
 # .env.local
 LIVEKIT_API_KEY=your_key
@@ -146,7 +268,7 @@ TTS_MODEL=nineninesix/kani-tts-400m-es
 TTS_VOICE=andrew
 ```
 
-**Example 2: vLLM for Performance + KaniTTS**
+**Example 3: vLLM for Performance + KaniTTS**
 ```env
 # .env.local
 LIVEKIT_API_KEY=your_key
@@ -164,7 +286,7 @@ TTS_MODEL=nineninesix/kani-tts-400m-es
 TTS_VOICE=andrew
 ```
 
-**Example 3: Cloud OpenAI + Local KaniTTS**
+**Example 4: Cloud OpenAI + Local KaniTTS**
 ```env
 # .env.local
 LIVEKIT_API_KEY=your_key
