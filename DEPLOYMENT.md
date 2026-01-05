@@ -1,13 +1,56 @@
-# Local Model Deployment Guide
+# Model Deployment Guide
 
-This guide provides step-by-step instructions for deploying all models locally for a completely self-hosted voice AI agent.
+This guide provides step-by-step instructions for deploying models for the voice AI agent, including cloud-based and local options.
 
 ## Overview
 
-This setup runs everything locally:
+You can choose from several deployment options:
+
+### Cloud-Based (Easiest)
+- **LLM**: DeepSeek Chat (default, recommended) or OpenAI GPT-4o-mini
+- **TTS**: KaniTTS Spanish model (nineninesix/kani-tts-400m-es) - requires local deployment
+- **STT**: Deepgram (cloud-based)
+
+### Fully Local
 - **LLM**: Qwen 2.5 Instruct (via vLLM, Ollama, or LM Studio)
 - **TTS**: KaniTTS Spanish model (nineninesix/kani-tts-400m-es)
-- **STT**: Deepgram (cloud-based, but can be replaced with local alternatives)
+- **STT**: Deepgram (cloud-based, but can be replaced with local alternatives like Whisper)
+
+## Quick Start: Cloud Setup with DeepSeek (Recommended)
+
+### Prerequisites
+
+- Python 3.10+
+- LiveKit account ([sign up for free](https://cloud.livekit.io/))
+- DeepSeek API key ([get it here](https://platform.deepseek.com/))
+- Deepgram API key ([get it here](https://console.deepgram.com/))
+
+### Step 1: Get DeepSeek API Key
+
+1. Visit [DeepSeek Platform](https://platform.deepseek.com/)
+2. Sign up or log in to your account
+3. Navigate to API Keys section
+4. Create a new API key
+5. Copy the key for configuration
+
+### Step 2: Configure DeepSeek
+
+Add to your `.env.local`:
+
+```env
+# DeepSeek Configuration (Default)
+LLM_PROVIDER=deepseek
+LLM_BASE_URL=https://api.deepseek.com
+LLM_MODEL=deepseek-chat
+OPENAI_API_KEY=your_deepseek_api_key_here
+```
+
+### Benefits of DeepSeek Chat
+
+- ⚡ **Fast**: Low latency responses
+- 💰 **Cost-effective**: Competitive pricing
+- 🧠 **Intelligent**: High-quality language understanding
+- 🔌 **Easy**: OpenAI-compatible API
 
 ## Quick Start: Fully Local Setup
 
