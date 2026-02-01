@@ -111,8 +111,8 @@ class STT(stt.STT):
                     )
                     
         except Exception as e:
-            # Return an error event
+            # Return an error event with context
             return stt.SpeechEvent(
                 type=stt.SpeechEventType.ERROR,
-                error=str(e),
+                error=f"Parakeet STT transcription failed: {str(e)}",
             )

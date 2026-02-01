@@ -60,6 +60,8 @@ try:
     if "CPUExecutionProvider" in providers_to_try[0]:
         sess_options.intra_op_num_threads = 8
         sess_options.inter_op_num_threads = 1
+        sess_options.execution_mode = ort.ExecutionMode.ORT_SEQUENTIAL
+        sess_options.graph_optimization_level = ort.GraphOptimizationLevel.ORT_ENABLE_ALL
     
     asr_model = onnx_asr.load_model(
         "nemo-parakeet-tdt-0.6b-v3",
@@ -68,22 +70,7 @@ try:
         sess_options=sess_options,
     ).with_timestamps()
 
-    print(f"Available providers: {ort.get_available_providers()}")
-
-    # Configure session options for optimal CPU performance
-    sess_options = ort.SessionOptions()
-    sess_options.intra_op_num_threads = 4  # Match Waitress threads
-    sess_options.inter_op_num_threads = 1
-    sess_options.execution_mode = ort.ExecutionMode.ORT_SEQUENTIAL
-    sess_options.graph_optimization_level = ort.GraphOptimizationLevel.ORT_ENABLE_ALL
-
-    asr_model = onnx_asr.load_model(
-        "nemo-parakeet-tdt-0.6b-v3",
-        quantization="int8",
-        providers=["CPUExecutionProvider"],
-        sess_options=sess_options,
-    ).with_timestamps()
-    print("Model loaded successfully with CPU optimization (10.6x real-time speedup)!")
+    print(f"Model loaded successfully! Using providers: {providers_to_try}")
 except Exception as e:
     print(f"❌ Model loading failed: {e}")
     import traceback
@@ -245,11 +232,9 @@ def find_optimal_split_points(total_duration: float, target_chunk_duration: floa
             if chosen > total_duration:
                 chosen = None  # Skip this split point if not feasible
         
-        split_points.append(chosen)
-        prev = chosen
-    
-    # Filter out None values if any splits were skipped
-    split_points = [sp for sp in split_points if sp is not None]
+        if chosen is not None:
+            split_points.append(chosen)
+            prev = chosen
     
     return split_points
 
@@ -314,7 +299,7 @@ def serve_logo():
 @app.route("/health")
 def health():
     return jsonify(
-        {"status": "healthy", "model": "parakeet-tdt-0.6b-v3", "speedup": "20.7x"}
+        {"status": "healthy", "model": "parakeet-tdt-0.6b-v3", "speedup": "~30x"}
     )
 
 
@@ -334,7 +319,7 @@ def openapi_spec():
             "description": "High-performance ONNX-optimized speech transcription API compatible with OpenAI.",
             "version": "1.0.0"
         },
-        "servers": [{"url": "http://100.85.200.51:5092"}],
+        "servers": [{"url": "http://localhost:5092"}],
         "paths": {
             "/v1/audio/transcriptions": {
                 "post": {

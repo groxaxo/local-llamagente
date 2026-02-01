@@ -39,8 +39,8 @@ echo "🚀 Starting Parakeet STT service..."
 docker compose up -d parakeet-stt
 
 echo ""
-echo "⏳ Waiting for service to be ready (this may take a minute)..."
-sleep 10
+echo "⏳ Waiting for service to be ready..."
+sleep 5
 
 # Check if service is running
 if ! docker compose ps | grep -q "parakeet-stt.*running"; then
