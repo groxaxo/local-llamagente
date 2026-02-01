@@ -1,9 +1,11 @@
-# Voice AI Agent with DeepSeek Chat
+# Voice AI Agent with Local STT
 
-A real-time voice AI assistant built with LiveKit Agents framework, featuring speech-to-text, language processing, and text-to-speech capabilities. Now with **DeepSeek Chat** as the default LLM and an **exquisite web frontend**!
+A real-time voice AI assistant built with LiveKit Agents framework, featuring **local speech-to-text** (Parakeet TDT), language processing, and text-to-speech capabilities. Now with **Parakeet TDT** for ultra-fast, multilingual STT, **DeepSeek Chat** as the default LLM, and an **exquisite web frontend**!
 
 ## ✨ New Features
 
+- 🎤 **Parakeet TDT STT** - Ultra-fast local speech-to-text (~30x real-time) with 25-language support
+- 🐳 **Docker Support** - One-command deployment with Docker Compose
 - 🎨 **Beautiful Web Frontend** - Modern, responsive UI with real-time conversation display
 - 🤖 **DeepSeek Chat** - Powerful language model as default (faster and more cost-effective)
 - 🚀 **Auto Installer** - One-command installation for Linux, macOS, and Windows
@@ -12,7 +14,11 @@ A real-time voice AI assistant built with LiveKit Agents framework, featuring sp
 
 ## Features
 
-- **Speech-to-Text**: Deepgram STT with Flux General EN model
+- **Speech-to-Text**: **Parakeet TDT 0.6B v3** - Local, ultra-fast STT with automatic language detection
+  - ~30x real-time speedup on modern CPUs
+  - 25 supported languages (English, Spanish, French, German, and more)
+  - No API keys required - fully local
+  - OpenAI-compatible API
 - **Language Model**: Supports multiple local and cloud LLM providers:
   - **DeepSeek Chat (default)** - Fast, intelligent, cost-effective
   - OpenAI GPT-4o-mini (cloud)
@@ -29,11 +35,61 @@ A real-time voice AI assistant built with LiveKit Agents framework, featuring sp
 
 - Python ≥ 3.10
 - [uv](https://docs.astral.sh/uv/) package manager (auto-installed by installer)
+- Docker and Docker Compose (for STT service)
 - LiveKit Cloud account ([sign up for free](https://cloud.livekit.io/))
 - API keys for:
   - LiveKit (API key, secret, and URL)
-  - Deepgram (for STT)
   - DeepSeek (for default LLM) OR OpenAI OR a local LLM server (vLLM, Ollama, or LM Studio)
+
+## Quick Start with Docker (Recommended)
+
+### Complete Setup (STT + Agent)
+
+**Linux / macOS:**
+```bash
+git clone https://github.com/groxaxo/local-llamagente.git
+cd local-llamagente
+
+# Automated setup (includes Docker build and health check)
+chmod +x setup-stt.sh
+./setup-stt.sh
+
+# Install agent dependencies
+./install.sh
+
+# Configure your .env.local file (see configuration below)
+
+# Start the agent
+uv run agent.py dev
+```
+
+**Windows:**
+```bash
+git clone https://github.com/groxaxo/local-llamagente.git
+cd local-llamagente
+
+# Automated setup (includes Docker build and health check)
+setup-stt.bat
+
+# Install agent dependencies
+install.bat
+
+# Configure your .env.local file (see configuration below)
+
+# Start the agent
+uv run agent.py dev
+```
+
+**Manual Docker Setup:**
+```bash
+# Start the Parakeet STT service
+docker compose up -d
+
+# Check service status
+curl http://localhost:5092/health
+```
+
+The Parakeet STT service will be available at `http://localhost:5092`
 
 ## Quick Start (Auto Installer)
 
@@ -106,11 +162,25 @@ uv sync
 ```
 
 This will install all required dependencies from [pyproject.toml](pyproject.toml):
-- `livekit-agents` with Deepgram, OpenAI, Silero, and turn-detector plugins
+- `livekit-agents` with OpenAI, Silero, and turn-detector plugins
 - `livekit-plugins-noise-cancellation` for audio processing
 - `python-dotenv` for environment variable management
+- `aiohttp` for Parakeet STT client
 
-### 4. Configure Environment Variables
+### 4. Start Parakeet STT Service
+
+Start the local STT service using Docker:
+
+```bash
+docker compose up -d
+```
+
+Verify it's running:
+```bash
+curl http://localhost:5092/health
+```
+
+### 5. Configure Environment Variables
 
 Create a `.env.local` file in the project root with the following variables:
 
@@ -118,7 +188,10 @@ Create a `.env.local` file in the project root with the following variables:
 LIVEKIT_API_KEY=your_livekit_api_key
 LIVEKIT_API_SECRET=your_livekit_api_secret
 LIVEKIT_URL=wss://your-project.livekit.cloud
-DEEPGRAM_API_KEY=your_deepgram_api_key
+
+# STT Configuration (Parakeet TDT - Local)
+PARAKEET_BASE_URL=http://localhost:5092/v1
+STT_MODEL=parakeet-tdt-0.6b-v3
 
 # LLM Configuration - Choose one option:
 # Option 1: DeepSeek Chat (Default - Recommended)
@@ -232,49 +305,62 @@ For detailed frontend documentation, see [frontend/README.md](frontend/README.md
 
 Here are some common configurations to get you started quickly:
 
-**Example 1: DeepSeek Chat (Default - Recommended)**
+**Example 1: DeepSeek Chat with Local STT (Default - Recommended)**
 ```env
 # .env.local
 LIVEKIT_API_KEY=your_key
 LIVEKIT_API_SECRET=your_secret
 LIVEKIT_URL=wss://your-project.livekit.cloud
-DEEPGRAM_API_KEY=your_deepgram_key
 
+# Local Parakeet STT
+PARAKEET_BASE_URL=http://localhost:5092/v1
+STT_MODEL=parakeet-tdt-0.6b-v3
+
+# DeepSeek LLM
 LLM_PROVIDER=deepseek
 LLM_BASE_URL=https://api.deepseek.com
 LLM_MODEL=deepseek-chat
 OPENAI_API_KEY=your_deepseek_api_key
 
+# KaniTTS
 KANI_BASE_URL=http://localhost:8000/v1
 TTS_MODEL=nineninesix/kani-tts-400m-es
 TTS_VOICE=andrew
 ```
 
-**Example 2: Fully Local Setup (Ollama + KaniTTS)**
+**Example 2: Fully Local Setup (Parakeet STT + Ollama + KaniTTS)**
 ```env
 # .env.local
 LIVEKIT_API_KEY=your_key
 LIVEKIT_API_SECRET=your_secret
 LIVEKIT_URL=wss://your-project.livekit.cloud
-DEEPGRAM_API_KEY=your_deepgram_key
 
+# Local Parakeet STT
+PARAKEET_BASE_URL=http://localhost:5092/v1
+STT_MODEL=parakeet-tdt-0.6b-v3
+
+# Ollama LLM
 LLM_PROVIDER=ollama
 LLM_BASE_URL=http://localhost:11434/v1
 LLM_MODEL=qwen2.5:7b-instruct
 OPENAI_API_KEY=not-needed
 
+# KaniTTS
 KANI_BASE_URL=http://localhost:8000/v1
 TTS_MODEL=nineninesix/kani-tts-400m-es
 TTS_VOICE=andrew
 ```
 
-**Example 3: vLLM for Performance + KaniTTS**
+**Example 3: Local STT + vLLM for Performance + KaniTTS**
 ```env
 # .env.local
 LIVEKIT_API_KEY=your_key
 LIVEKIT_API_SECRET=your_secret
 LIVEKIT_URL=wss://your-project.livekit.cloud
-DEEPGRAM_API_KEY=your_deepgram_key
+
+# Local Parakeet STT
+PARAKEET_BASE_URL=http://localhost:5092/v1
+STT_MODEL=parakeet-tdt-0.6b-v3
 
 LLM_PROVIDER=vllm
 LLM_BASE_URL=http://localhost:8001/v1
@@ -286,18 +372,23 @@ TTS_MODEL=nineninesix/kani-tts-400m-es
 TTS_VOICE=andrew
 ```
 
-**Example 4: Cloud OpenAI + Local KaniTTS**
+**Example 4: Local STT + Cloud OpenAI + Local TTS**
 ```env
 # .env.local
 LIVEKIT_API_KEY=your_key
 LIVEKIT_API_SECRET=your_secret
 LIVEKIT_URL=wss://your-project.livekit.cloud
-DEEPGRAM_API_KEY=your_deepgram_key
 
+# Local Parakeet STT
+PARAKEET_BASE_URL=http://localhost:5092/v1
+STT_MODEL=parakeet-tdt-0.6b-v3
+
+# OpenAI LLM
 LLM_PROVIDER=openai
 LLM_MODEL=gpt-4o-mini
 OPENAI_API_KEY=your_openai_key
 
+# KaniTTS
 KANI_BASE_URL=http://localhost:8000/v1
 TTS_MODEL=nineninesix/kani-tts-400m-es
 TTS_VOICE=andrew
@@ -467,8 +558,8 @@ Check our reference implementation: https://github.com/nineninesix-ai/kanitts-vl
 ### Audio Models Configuration
 
 Current configuration:
-- **STT**: Deepgram Flux General EN with 0.4s eager end-of-turn threshold
-- **LLM**: Configurable (OpenAI, vLLM, Ollama, or LM Studio)
+- **STT**: Parakeet TDT 0.6B v3 - Local, ultra-fast (~30x real-time), 25-language support
+- **LLM**: Configurable (DeepSeek, OpenAI, vLLM, Ollama, or LM Studio)
 - **TTS**: KaniTTS Spanish model (nineninesix/kani-tts-400m-es)
 - **VAD**: Silero VAD
 - **Turn Detection**: Multilingual model
@@ -514,7 +605,7 @@ After deployment, your agent will be available through:
 
 - [LiveKit Agents Documentation](https://docs.livekit.io/agents/)
 - [LiveKit Cloud Console](https://cloud.livekit.io/)
-- [Deepgram Documentation](https://developers.deepgram.com/)
+- [Parakeet TDT Model](https://huggingface.co/nvidia/parakeet-tdt-0.6b-v3)
 - [OpenAI API Documentation](https://platform.openai.com/docs/)
 
 ## Troubleshooting
@@ -523,6 +614,13 @@ After deployment, your agent will be available through:
 - Verify all environment variables are set correctly in `.env.local`
 - Ensure model files are downloaded: `uv run agent.py download-files`
 - Check that your API keys are valid (or set to "not-needed" for local LLMs)
+- Ensure Parakeet STT service is running: `docker compose ps`
+
+**STT not working:**
+- Verify Parakeet STT service is running: `curl http://localhost:5092/health`
+- Check Docker logs: `docker compose logs parakeet-stt`
+- Ensure port 5092 is not in use by another service
+- Verify `PARAKEET_BASE_URL` is correctly set in `.env.local`
 
 **No audio in/out:**
 - Verify your microphone/speaker permissions

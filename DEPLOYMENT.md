@@ -6,26 +6,38 @@ This guide provides step-by-step instructions for deploying models for the voice
 
 You can choose from several deployment options:
 
-### Cloud-Based (Easiest)
-- **LLM**: DeepSeek Chat (default, recommended) or OpenAI GPT-4o-mini
-- **TTS**: KaniTTS Spanish model (nineninesix/kani-tts-400m-es) - requires local deployment
-- **STT**: Deepgram (cloud-based)
+### Hybrid (Recommended)
+- **STT**: Parakeet TDT 0.6B v3 (local, ultra-fast)
+- **LLM**: DeepSeek Chat (cloud) or OpenAI GPT-4o-mini (cloud)
+- **TTS**: KaniTTS Spanish model (local)
 
 ### Fully Local
+- **STT**: Parakeet TDT 0.6B v3 (local, ultra-fast)
 - **LLM**: Qwen 2.5 Instruct (via vLLM, Ollama, or LM Studio)
 - **TTS**: KaniTTS Spanish model (nineninesix/kani-tts-400m-es)
-- **STT**: Deepgram (cloud-based, but can be replaced with local alternatives like Whisper)
 
-## Quick Start: Cloud Setup with DeepSeek (Recommended)
+## Quick Start: Hybrid Setup with Parakeet STT + DeepSeek (Recommended)
 
 ### Prerequisites
 
 - Python 3.10+
+- Docker and Docker Compose
 - LiveKit account ([sign up for free](https://cloud.livekit.io/))
 - DeepSeek API key ([get it here](https://platform.deepseek.com/))
-- Deepgram API key ([get it here](https://console.deepgram.com/))
 
-### Step 1: Get DeepSeek API Key
+### Step 1: Start Parakeet STT Service
+
+```bash
+cd /path/to/local-llamagente
+docker compose up -d
+```
+
+Verify it's running:
+```bash
+curl http://localhost:5092/health
+```
+
+### Step 2: Get DeepSeek API Key
 
 1. Visit [DeepSeek Platform](https://platform.deepseek.com/)
 2. Sign up or log in to your account
@@ -33,11 +45,19 @@ You can choose from several deployment options:
 4. Create a new API key
 5. Copy the key for configuration
 
-### Step 2: Configure DeepSeek
+### Step 3: Configure Services
 
 Add to your `.env.local`:
 
 ```env
+# LiveKit
+LIVEKIT_API_KEY=your_livekit_api_key
+LIVEKIT_API_SECRET=your_livekit_api_secret
+LIVEKIT_URL=wss://your-project.livekit.cloud
+
+# Parakeet STT (Local)
+PARAKEET_BASE_URL=http://localhost:5092/v1
+STT_MODEL=parakeet-tdt-0.6b-v3
 # DeepSeek Configuration (Default)
 LLM_PROVIDER=deepseek
 LLM_BASE_URL=https://api.deepseek.com
@@ -45,21 +65,35 @@ LLM_MODEL=deepseek-chat
 OPENAI_API_KEY=your_deepseek_api_key_here
 ```
 
-### Benefits of DeepSeek Chat
+### Benefits of This Setup
 
-- ⚡ **Fast**: Low latency responses
-- 💰 **Cost-effective**: Competitive pricing
-- 🧠 **Intelligent**: High-quality language understanding
-- 🔌 **Easy**: OpenAI-compatible API
+- ⚡ **Ultra-fast STT**: ~30x real-time transcription on CPU
+- 🌍 **Multilingual**: Automatic language detection across 25 languages  
+- 🔒 **Privacy**: All audio transcription happens locally
+- 💰 **Cost-effective**: Only pay for LLM inference
+- 🧠 **Intelligent**: High-quality language understanding from DeepSeek
 
 ## Quick Start: Fully Local Setup
 
 ### Prerequisites
 
 - Python 3.10+
+- Docker and Docker Compose
 - 16GB+ RAM (for 7B models)
 - 8GB+ VRAM (GPU recommended but not required)
 - LiveKit account (or self-hosted LiveKit server)
+
+### Step 0: Start Parakeet STT Service
+
+```bash
+cd /path/to/local-llamagente
+docker compose up -d
+```
+
+Verify it's running:
+```bash
+curl http://localhost:5092/health
+```
 
 ### Step 1: Install and Setup LLM (Choose One)
 
@@ -211,8 +245,9 @@ OPENAI_API_KEY=your_deepseek_api_key_here
    LIVEKIT_API_SECRET=your_livekit_api_secret
    LIVEKIT_URL=wss://your-project.livekit.cloud
    
-   # Deepgram STT
-   DEEPGRAM_API_KEY=your_deepgram_api_key
+   # Parakeet STT (Local)
+   PARAKEET_BASE_URL=http://localhost:5092/v1
+   STT_MODEL=parakeet-tdt-0.6b-v3
    
    # LLM (Example: Ollama)
    LLM_PROVIDER=ollama
@@ -348,6 +383,28 @@ For production deployment:
 4. Use reverse proxy (nginx) for external access
 5. Implement proper security (authentication, rate limiting)
 
+### Example systemd Service for Parakeet STT
+
+**Note**: For Parakeet STT, we recommend using Docker Compose as shown above. However, if you need a systemd service:
+
+```ini
+[Unit]
+Description=Parakeet TDT STT Service
+After=network.target docker.service
+Requires=docker.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+WorkingDirectory=/path/to/local-llamagente
+ExecStart=/usr/bin/docker compose up -d parakeet-stt
+ExecStop=/usr/bin/docker compose stop parakeet-stt
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+```
+
 ### Example systemd Service for vLLM
 
 ```ini
@@ -386,20 +443,63 @@ RestartSec=10
 WantedBy=multi-user.target
 ```
 
-## Alternative STT Options
+## Parakeet STT Service Details
 
-While this guide uses Deepgram (cloud), you can also use local STT:
+### About Parakeet TDT
 
-### Whisper (Local STT)
+Parakeet TDT (Token-and-Duration Transducer) 0.6B v3 is NVIDIA's high-performance speech recognition model optimized for ultra-fast transcription:
 
+- **Speed**: ~30x real-time on modern CPUs (Intel i7-12700K)
+- **Languages**: 25 languages with automatic detection
+- **Architecture**: Efficient TDT model with INT8 quantization
+- **API**: OpenAI-compatible endpoint
+- **Privacy**: Fully local, no external API calls
+
+### Supported Languages
+
+English, Spanish, French, Russian, German, Italian, Polish, Ukrainian, Romanian, Dutch, Hungarian, Greek, Swedish, Czech, Bulgarian, Portuguese, Slovak, Croatian, Danish, Finnish, Lithuanian, Slovenian, Latvian, Estonian, Maltese
+
+### Performance Metrics
+
+| Hardware | Real-Time Factor | Speedup |
+|----------|------------------|---------|
+| i7-12700KF (P-cores) | 0.033 | ~30x |
+| i7-4790 | 0.058 | ~17x |
+
+### Managing the STT Service
+
+**Start the service:**
 ```bash
-pip install openai-whisper
+docker compose up -d
 ```
 
-Modify the agent to use Whisper instead of Deepgram for fully local operation.
+**Check status:**
+```bash
+docker compose ps
+curl http://localhost:5092/health
+```
+
+**View logs:**
+```bash
+docker compose logs -f parakeet-stt
+```
+
+**Stop the service:**
+```bash
+docker compose down
+```
+
+**Update the service:**
+```bash
+docker compose pull
+docker compose up -d
+```
+
+For more details, see [stt-service/README.md](stt-service/README.md).
 
 ## Resources
 
+- [Parakeet TDT Model](https://huggingface.co/nvidia/parakeet-tdt-0.6b-v3)
 - [Qwen Models](https://huggingface.co/Qwen)
 - [KaniTTS Model](https://huggingface.co/nineninesix/kani-tts-400m-es)
 - [vLLM Documentation](https://docs.vllm.ai/)
