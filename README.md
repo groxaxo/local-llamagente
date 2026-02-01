@@ -45,15 +45,17 @@ A real-time voice AI assistant built with LiveKit Agents framework, featuring **
 
 ### Complete Setup (STT + Agent)
 
+**Linux / macOS:**
 ```bash
 git clone https://github.com/groxaxo/local-llamagente.git
 cd local-llamagente
 
-# Start the Parakeet STT service
-docker compose up -d
+# Automated setup (includes Docker build and health check)
+chmod +x setup-stt.sh
+./setup-stt.sh
 
 # Install agent dependencies
-./install.sh  # or install.bat on Windows
+./install.sh
 
 # Configure your .env.local file (see configuration below)
 
@@ -61,7 +63,35 @@ docker compose up -d
 uv run agent.py dev
 ```
 
+**Windows:**
+```bash
+git clone https://github.com/groxaxo/local-llamagente.git
+cd local-llamagente
+
+# Automated setup (includes Docker build and health check)
+setup-stt.bat
+
+# Install agent dependencies
+install.bat
+
+# Configure your .env.local file (see configuration below)
+
+# Start the agent
+uv run agent.py dev
+```
+
+**Manual Docker Setup:**
+```bash
+# Start the Parakeet STT service
+docker compose up -d
+
+# Check service status
+curl http://localhost:5092/health
+```
+
 The Parakeet STT service will be available at `http://localhost:5092`
+
+## Quick Start (Auto Installer)
 
 ### Linux / macOS
 
