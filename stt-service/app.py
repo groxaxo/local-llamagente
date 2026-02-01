@@ -221,7 +221,7 @@ def find_optimal_split_points(total_duration: float, target_chunk_duration: floa
             # Find first candidate that satisfies minimum gap constraint
             for start, end in candidates_sorted:
                 split_point = (start + end) / 2.0
-                if split_point > prev + min_gap and split_point <= total_duration - min_gap:
+                if split_point > prev + min_gap and split_point < total_duration:
                     chosen = split_point
                     break
         
@@ -229,7 +229,7 @@ def find_optimal_split_points(total_duration: float, target_chunk_duration: floa
             # Fallback: target time, but enforce monotonicity and bounds
             chosen = max(prev + min_gap, min(target_time, total_duration - min_gap))
             # Ensure chosen doesn't exceed total_duration
-            if chosen > total_duration:
+            if chosen >= total_duration:
                 chosen = None  # Skip this split point if not feasible
         
         if chosen is not None:
@@ -656,7 +656,7 @@ def transcribe_audio():
             return jsonify(
                 {
                     "task": "transcribe",
-                    "language": "english",  # detection not implemented here, hardcoded or param?
+                    "language": "auto",  # Parakeet auto-detects language
                     "duration": total_duration,
                     "text": full_text,
                     "segments": [

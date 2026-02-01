@@ -98,10 +98,11 @@ class STT(stt.STT):
                     text = result.get("text", "")
                     
                     # Create alternatives list (Parakeet doesn't provide alternatives)
+                    # Language is set to empty string when not specified, as Parakeet auto-detects
                     alternatives = [
                         stt.SpeechData(
                             text=text,
-                            language=self._language or "auto",  # Parakeet auto-detects
+                            language=self._language or "",  # Empty string for auto-detected language
                         )
                     ]
                     
