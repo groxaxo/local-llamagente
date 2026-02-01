@@ -78,3 +78,10 @@ cython_debug/
 livekit.toml
 Dockerfile
 .dockerignore
+
+# STT Service temporary files
+stt-service/temp_uploads/
+stt-service/models/
+
+# Docker volumes
+parakeet-models/

@@ -3,8 +3,11 @@ from dotenv import load_dotenv
 
 from livekit import agents
 from livekit.agents import AgentSession, Agent, RoomInputOptions
-from livekit.plugins import noise_cancellation, silero, deepgram, openai
+from livekit.plugins import noise_cancellation, silero, openai
 from livekit.plugins.turn_detector.multilingual import MultilingualModel
+
+# Import custom Parakeet STT plugin
+import parakeet_stt
 
 
 load_dotenv(".env.local")
@@ -41,15 +44,19 @@ async def entrypoint(ctx: agents.JobContext):
             api_key=llm_api_key,
         )
     
+    # Configure STT (Parakeet TDT server)
+    stt_base_url = os.getenv("PARAKEET_BASE_URL", "http://localhost:5092/v1")
+    stt_model = os.getenv("STT_MODEL", "parakeet-tdt-0.6b-v3")
+    
     # Configure TTS (KaniTTS server with Spanish model)
     tts_base_url = os.getenv("KANI_BASE_URL", "http://localhost:8000/v1")
     tts_model = os.getenv("TTS_MODEL", "nineninesix/kani-tts-400m-es")
     tts_voice = os.getenv("TTS_VOICE", "andrew")
     
     session = AgentSession(
-        stt=deepgram.STTv2(
-            model="flux-general-en",
-            eager_eot_threshold=0.4,
+        stt=parakeet_stt.STT(
+            base_url=stt_base_url,
+            model=stt_model,
         ),
         llm=llm,
         tts=openai.TTS(

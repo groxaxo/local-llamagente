@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  parakeet-stt:
+    build:
+      context: ./stt-service
+      dockerfile: Dockerfile
+    container_name: parakeet-stt
+    ports:
+      - "5092:5092"
+    volumes:
+      # Persist model downloads
+      - parakeet-models:/app/models
+      # Optional: mount local audio files for testing
+      # - ./test-audio:/app/test-audio:ro
+    environment:
+      - PYTHONUNBUFFERED=1
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:5092/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+volumes:
+  parakeet-models:
+    driver: local

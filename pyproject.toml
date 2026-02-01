@@ -3,7 +3,8 @@ name = "lk-agent"
 version = "0.1.0"
 requires-python = ">=3.10"
 dependencies = [
-    "livekit-agents[deepgram,openai,silero,turn-detector]~=1.2",
+    "livekit-agents[openai,silero,turn-detector]~=1.2",
     "livekit-plugins-noise-cancellation~=0.2",
     "python-dotenv>=1.1.1",
+    "aiohttp>=3.9.0",
 ]
