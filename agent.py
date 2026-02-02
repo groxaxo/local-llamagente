@@ -24,31 +24,33 @@ class Assistant(Agent):
 
 
 async def entrypoint(ctx: agents.JobContext):
-    # Configure LLM based on provider (supports OpenAI-compatible APIs)
+    # Configure LLM (supports any OpenAI-compatible API)
     llm_base_url = os.getenv("LLM_BASE_URL", "https://api.deepseek.com")
     llm_model = os.getenv("LLM_MODEL", "deepseek-chat")
     llm_api_key = os.getenv("OPENAI_API_KEY", "not-needed")
     
-    # Create LLM instance (all providers use OpenAI-compatible interface)
+    # Create LLM instance using OpenAI-compatible interface
+    # Works with: OpenAI, DeepSeek, Anthropic (via proxy), vLLM, Ollama, LM Studio, etc.
     if llm_base_url:
-        # Local providers: vLLM, Ollama, LM Studio (all OpenAI-compatible)
         llm = openai.LLM(
             model=llm_model,
             base_url=llm_base_url,
             api_key=llm_api_key,
         )
     else:
-        # Default OpenAI (explicitly pass API key)
+        # Default OpenAI
         llm = openai.LLM(
             model=llm_model,
             api_key=llm_api_key,
         )
     
-    # Configure STT (Parakeet TDT server)
+    # Configure STT (supports any OpenAI-compatible STT API)
+    # Works with: Local Parakeet TDT, OpenAI Whisper, or any compatible service
     stt_base_url = os.getenv("PARAKEET_BASE_URL", "http://localhost:5092/v1")
     stt_model = os.getenv("STT_MODEL", "parakeet-tdt-0.6b-v3")
     
-    # Configure TTS (KaniTTS server with Spanish model)
+    # Configure TTS (supports any OpenAI-compatible TTS API)
+    # Works with: OpenAI TTS, Local KaniTTS, or any compatible service
     tts_base_url = os.getenv("KANI_BASE_URL", "http://localhost:8000/v1")
     tts_model = os.getenv("TTS_MODEL", "nineninesix/kani-tts-400m-es")
     tts_voice = os.getenv("TTS_VOICE", "andrew")

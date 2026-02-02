@@ -139,28 +139,18 @@ if [ ! -f .env.local ]; then
     
     # API Keys
     echo ""
-    echo "You'll need to configure the following API keys in .env.local:"
-    echo "  1. DEEPGRAM_API_KEY - Get it from: https://console.deepgram.com/"
-    echo "  2. OPENAI_API_KEY - For DeepSeek, get it from: https://platform.deepseek.com/"
+    echo "You'll need to configure API keys in .env.local based on your chosen providers:"
+    echo "  - For OpenAI: Get API key from https://platform.openai.com/"
+    echo "  - For DeepSeek: Get API key from https://platform.deepseek.com/"
+    echo "  - For local providers (Ollama, vLLM, etc.): Use 'not-needed'"
+    echo "  - Local Parakeet STT: No API key required (runs via Docker)"
     echo ""
-    echo "Would you like to enter these keys now? (y/n)"
+    echo "Would you like to enter your LLM API key now? (y/n)"
     read -r configure_keys
     
     if [ "$configure_keys" = "y" ] || [ "$configure_keys" = "Y" ]; then
         echo ""
-        echo -n "Enter your Deepgram API key (or press Enter to skip): "
-        read -r deepgram_key
-        if [ -n "$deepgram_key" ]; then
-            if [ "$MACHINE" = "Mac" ]; then
-                sed -i '' "s/DEEPGRAM_API_KEY=\"\"/DEEPGRAM_API_KEY=\"$deepgram_key\"/" .env.local
-            else
-                sed -i "s/DEEPGRAM_API_KEY=\"\"/DEEPGRAM_API_KEY=\"$deepgram_key\"/" .env.local
-            fi
-            print_success "Deepgram API key saved"
-        fi
-        
-        echo ""
-        echo -n "Enter your DeepSeek API key (or press Enter to skip): "
+        echo -n "Enter your LLM API key (OpenAI/DeepSeek) or 'not-needed' for local: "
         read -r openai_key
         if [ -n "$openai_key" ]; then
             if [ "$MACHINE" = "Mac" ]; then
@@ -168,7 +158,7 @@ if [ ! -f .env.local ]; then
             else
                 sed -i "s/OPENAI_API_KEY=\"\"/OPENAI_API_KEY=\"$openai_key\"/" .env.local
             fi
-            print_success "DeepSeek API key saved"
+            print_success "API key saved to .env.local"
         fi
     fi
 else
@@ -182,10 +172,11 @@ echo "Installation Complete!"
 echo "========================================="
 echo ""
 echo "Next steps:"
-echo "  1. Make sure all API keys are configured in .env.local"
-echo "  2. Start the agent with: uv run agent.py dev"
-echo "  3. Open the frontend: open frontend/index.html (or use a local server)"
+echo "  1. Configure API keys in .env.local for your chosen providers"
+echo "  2. (Optional) Start local STT: docker compose up -d"
+echo "  3. Start the agent: uv run agent.py dev"
+echo "  4. Open the frontend: open frontend/index.html (or use a local server)"
 echo ""
-echo "For local LLM setup, see DEPLOYMENT.md"
+echo "For more configuration options, see README.md"
 echo ""
 print_success "You're all set! Happy building!"
