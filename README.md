@@ -1,65 +1,40 @@
-# Voice AI Agent with Local STT
+# Voice AI Agent
 
-A real-time voice AI assistant built with LiveKit Agents framework, featuring **local speech-to-text** (Parakeet TDT), language processing, and text-to-speech capabilities. Now with **Parakeet TDT** for ultra-fast, multilingual STT, **DeepSeek Chat** as the default LLM, and an **exquisite web frontend**!
+A real-time voice AI assistant built with the LiveKit Agents framework. This project features **local speech-to-text** (Parakeet TDT), flexible language model support, and text-to-speech capabilities—all using **OpenAI-compatible API endpoints**.
 
-## ✨ New Features
+## ✨ Key Features
 
-- 🎤 **Parakeet TDT STT** - Ultra-fast local speech-to-text (~30x real-time) with 25-language support
-- 🐳 **Docker Support** - One-command deployment with Docker Compose
-- 🎨 **Beautiful Web Frontend** - Modern, responsive UI with real-time conversation display
-- 🤖 **DeepSeek Chat** - Powerful language model as default (faster and more cost-effective)
-- 🚀 **Auto Installer** - One-command installation for Linux, macOS, and Windows
-- 📊 **Audio Visualization** - Live audio level visualization in the frontend
-- ⚙️ **Easy Configuration** - Simple web-based setup for all settings
+- 🎤 **Flexible STT**: Local Parakeet TDT (~30x real-time) or any OpenAI-compatible STT service
+- 🤖 **Universal LLM Support**: Works with OpenAI, DeepSeek, Anthropic, or any OpenAI-compatible provider
+- 🔊 **Configurable TTS**: OpenAI TTS, local KaniTTS, or any compatible service
+- 🌍 **Multilingual**: 25+ languages supported with automatic detection
+- 🎨 **Modern Web UI**: Beautiful, responsive interface with real-time features
+- 🐳 **Docker Ready**: One-command deployment with Docker Compose
+- 🔒 **Privacy First**: Run everything locally or mix local/cloud services
 
-## Features
+## Quick Start
 
-- **Speech-to-Text**: **Parakeet TDT 0.6B v3** - Local, ultra-fast STT with automatic language detection
-  - ~30x real-time speedup on modern CPUs
-  - 25 supported languages (English, Spanish, French, German, and more)
-  - No API keys required - fully local
-  - OpenAI-compatible API
-- **Language Model**: Supports multiple local and cloud LLM providers:
-  - **DeepSeek Chat (default)** - Fast, intelligent, cost-effective
-  - OpenAI GPT-4o-mini (cloud)
-  - vLLM with Qwen 2.5 Instruct (local)
-  - Ollama (local)
-  - LM Studio (local)
-- **Text-to-Speech**: KaniTTS Spanish model (nineninesix/kani-tts-400m-es) via OpenAI-compatible server
-- **Voice Activity Detection**: Silero VAD for accurate speech detection
-- **Turn Detection**: Multilingual turn detection for natural conversations
-- **Noise Cancellation**: Background voice cancellation (BVC) for clear audio
-- **Web Frontend**: Beautiful, responsive UI with real-time features
-
-## Prerequisites
+### Prerequisites
 
 - Python ≥ 3.10
-- [uv](https://docs.astral.sh/uv/) package manager (auto-installed by installer)
-- Docker and Docker Compose (for STT service)
+- Docker and Docker Compose (for local STT)
 - LiveKit Cloud account ([sign up for free](https://cloud.livekit.io/))
-- API keys for:
-  - LiveKit (API key, secret, and URL)
-  - DeepSeek (for default LLM) OR OpenAI OR a local LLM server (vLLM, Ollama, or LM Studio)
+- API keys for your chosen providers (OpenAI, DeepSeek, etc.)
 
-## Quick Start with Docker (Recommended)
-
-### Complete Setup (STT + Agent)
+### Installation
 
 **Linux / macOS:**
 ```bash
 git clone https://github.com/groxaxo/local-llamagente.git
 cd local-llamagente
 
-# Automated setup (includes Docker build and health check)
-chmod +x setup-stt.sh
+# Setup local STT service (optional)
 ./setup-stt.sh
 
 # Install agent dependencies
 ./install.sh
 
-# Configure your .env.local file (see configuration below)
-
-# Start the agent
+# Configure your .env.local file (see below)
 uv run agent.py dev
 ```
 
@@ -68,538 +43,327 @@ uv run agent.py dev
 git clone https://github.com/groxaxo/local-llamagente.git
 cd local-llamagente
 
-# Automated setup (includes Docker build and health check)
+# Setup local STT service (optional)
 setup-stt.bat
 
 # Install agent dependencies
 install.bat
 
-# Configure your .env.local file (see configuration below)
-
-# Start the agent
+# Configure your .env.local file (see below)
 uv run agent.py dev
 ```
 
-**Manual Docker Setup:**
-```bash
-# Start the Parakeet STT service
-docker compose up -d
+### Configuration
 
-# Check service status
-curl http://localhost:5092/health
-```
+Create a `.env.local` file with your settings. All three components (STT, LLM, TTS) support **OpenAI-compatible API endpoints**.
 
-The Parakeet STT service will be available at `http://localhost:5092`
-
-## Quick Start (Auto Installer)
-
-### Linux / macOS
-
-```bash
-git clone https://github.com/groxaxo/local-llamagente.git
-cd local-llamagente
-chmod +x install.sh
-./install.sh
-```
-
-### Windows
-
-```bash
-git clone https://github.com/groxaxo/local-llamagente.git
-cd local-llamagente
-install.bat
-```
-
-The auto installer will:
-- ✅ Check Python version
-- ✅ Install uv package manager
-- ✅ Install LiveKit CLI
-- ✅ Install all dependencies
-- ✅ Download required model files
-- ✅ Set up environment variables
-- ✅ Guide you through API key configuration
-
-After installation:
-1. Configure your API keys in `.env.local`
-2. Start the agent: `uv run agent.py dev`
-3. Open the frontend: `open frontend/index.html`
-
-## Manual Installation
-
-### 1. Install LiveKit CLI (if not using auto installer)
-
-**macOS:**
-```bash
-brew install livekit-cli
-```
-
-**Linux:**
-```bash
-curl -sSL https://get.livekit.io/cli | bash
-```
-
-**Windows:**
-```bash
-winget install LiveKit.LiveKitCLI
-```
-
-Then authenticate with LiveKit Cloud:
-```bash
-lk cloud auth
-```
-
-### 2. Clone and Setup
-
-```bash
-git clone git@github.com:nineninesix-ai/livekit-agent.git
-cd livekit-agent
-```
-
-### 3. Install Dependencies
-
-```bash
-uv sync
-```
-
-This will install all required dependencies from [pyproject.toml](pyproject.toml):
-- `livekit-agents` with OpenAI, Silero, and turn-detector plugins
-- `livekit-plugins-noise-cancellation` for audio processing
-- `python-dotenv` for environment variable management
-- `aiohttp` for Parakeet STT client
-
-### 4. Start Parakeet STT Service
-
-Start the local STT service using Docker:
-
-```bash
-docker compose up -d
-```
-
-Verify it's running:
-```bash
-curl http://localhost:5092/health
-```
-
-### 5. Configure Environment Variables
-
-Create a `.env.local` file in the project root with the following variables:
+#### Example 1: OpenAI (Cloud)
 
 ```env
 LIVEKIT_API_KEY=your_livekit_api_key
 LIVEKIT_API_SECRET=your_livekit_api_secret
 LIVEKIT_URL=wss://your-project.livekit.cloud
 
-# STT Configuration (Parakeet TDT - Local)
+# OpenAI STT (Cloud)
+PARAKEET_BASE_URL=https://api.openai.com/v1
+STT_MODEL=whisper-1
+OPENAI_API_KEY=your_openai_api_key
+
+# OpenAI LLM (Cloud)
+LLM_PROVIDER=openai
+LLM_BASE_URL=https://api.openai.com/v1
+LLM_MODEL=gpt-4o-mini
+
+# OpenAI TTS (Cloud)
+KANI_BASE_URL=https://api.openai.com/v1
+TTS_MODEL=tts-1
+TTS_VOICE=alloy
+```
+
+#### Example 2: DeepSeek + Local STT (Hybrid - Recommended)
+
+```env
+LIVEKIT_API_KEY=your_livekit_api_key
+LIVEKIT_API_SECRET=your_livekit_api_secret
+LIVEKIT_URL=wss://your-project.livekit.cloud
+
+# Local Parakeet STT (ultra-fast, local)
 PARAKEET_BASE_URL=http://localhost:5092/v1
 STT_MODEL=parakeet-tdt-0.6b-v3
 
-# LLM Configuration - Choose one option:
-# Option 1: DeepSeek Chat (Default - Recommended)
-OPENAI_API_KEY=your_deepseek_api_key
+# DeepSeek LLM (cloud, cost-effective)
 LLM_PROVIDER=deepseek
 LLM_BASE_URL=https://api.deepseek.com
 LLM_MODEL=deepseek-chat
+OPENAI_API_KEY=your_deepseek_api_key
 
-# Option 2: OpenAI (Cloud)
-# OPENAI_API_KEY=your_openai_api_key
-# LLM_PROVIDER=openai
-# LLM_BASE_URL=https://api.openai.com/v1
-# LLM_MODEL=gpt-4o-mini
+# OpenAI TTS (cloud)
+KANI_BASE_URL=https://api.openai.com/v1
+TTS_MODEL=tts-1
+TTS_VOICE=alloy
+```
 
-# Option 3: vLLM (Local)
-# LLM_PROVIDER=vllm
-# LLM_BASE_URL=http://localhost:8001/v1
-# LLM_MODEL=Qwen/Qwen2.5-7B-Instruct
-# OPENAI_API_KEY=not-needed
+#### Example 3: Fully Local
 
-# Option 4: Ollama (Local)
-# LLM_PROVIDER=ollama
-# LLM_BASE_URL=http://localhost:11434/v1
-# LLM_MODEL=qwen2.5:7b-instruct
-# OPENAI_API_KEY=not-needed
+```env
+LIVEKIT_API_KEY=your_livekit_api_key
+LIVEKIT_API_SECRET=your_livekit_api_secret
+LIVEKIT_URL=wss://your-project.livekit.cloud
 
-# Option 5: LM Studio (Local)
-# LLM_PROVIDER=lmstudio
-# LLM_BASE_URL=http://localhost:1234/v1
-# LLM_MODEL=qwen2.5-7b-instruct
-# OPENAI_API_KEY=not-needed
+# Local Parakeet STT
+PARAKEET_BASE_URL=http://localhost:5092/v1
+STT_MODEL=parakeet-tdt-0.6b-v3
 
-# TTS Configuration (KaniTTS)
+# Local LLM (Ollama)
+LLM_PROVIDER=ollama
+LLM_BASE_URL=http://localhost:11434/v1
+LLM_MODEL=qwen2.5:7b-instruct
+OPENAI_API_KEY=not-needed
+
+# Local TTS (KaniTTS)
 KANI_BASE_URL=http://localhost:8000/v1
 TTS_MODEL=nineninesix/kani-tts-400m-es
 TTS_VOICE=andrew
 ```
 
-**Get your DeepSeek API key:**
-1. Visit [DeepSeek Platform](https://platform.deepseek.com/)
-2. Sign up for an account
-3. Generate an API key from the dashboard
+## Using the Web Frontend
 
-**Quick setup with LiveKit CLI:**
-```bash
-lk app env -w
-```
-
-This automatically generates LiveKit credentials in `.env.local`.
-
-### 5. Download Model Files
-
-Download required model files (VAD, turn detection, etc.):
-
-```bash
-uv run agent.py download-files
-```
-
-## Web Frontend
-
-This project includes a beautiful, modern web interface for interacting with the voice assistant.
-
-### Features
-
-- 🎨 Modern, responsive design with smooth animations
-- 🎙️ Push-to-talk microphone control
-- 📊 Real-time audio visualization
-- 💬 Live conversation display
-- ⚙️ Easy configuration panel
-- 📱 Works on desktop, tablet, and mobile
-
-### Using the Frontend
-
-1. **Start the backend agent**:
+1. **Start the agent**:
    ```bash
    uv run agent.py dev
    ```
 
 2. **Open the frontend**:
-   
-   **Quick method (for testing):**
    ```bash
-   # macOS
+   # Quick method
    open frontend/index.html
    
-   # Linux
-   xdg-open frontend/index.html
-   
-   # Windows
-   start frontend/index.html
-   ```
-   
-   **Recommended method (with local server):**
-   ```bash
-   cd frontend
-   python3 -m http.server 8080
-   # Then open http://localhost:8080 in your browser
+   # Or with a local server (recommended)
+   cd frontend && python3 -m http.server 8080
+   # Then open http://localhost:8080
    ```
 
 3. **Configure and connect**:
    - Enter your LiveKit URL
    - Set room name and participant name
    - Click "Connect"
-   - Use push-to-talk to speak with the assistant
+   - Use push-to-talk to speak
 
-For detailed frontend documentation, see [frontend/README.md](frontend/README.md).
+## Component Setup
 
-## Usage
+### STT (Speech-to-Text)
 
-### Quick Start Examples
+#### Option 1: Local Parakeet TDT (Recommended)
 
-Here are some common configurations to get you started quickly:
+Ultra-fast local STT with 25+ language support:
 
-**Example 1: DeepSeek Chat with Local STT (Default - Recommended)**
+```bash
+docker compose up -d
+curl http://localhost:5092/health  # Verify
+```
+
+Configuration:
 ```env
-# .env.local
-LIVEKIT_API_KEY=your_key
-LIVEKIT_API_SECRET=your_secret
-LIVEKIT_URL=wss://your-project.livekit.cloud
-
-# Local Parakeet STT
 PARAKEET_BASE_URL=http://localhost:5092/v1
 STT_MODEL=parakeet-tdt-0.6b-v3
+```
 
-# DeepSeek LLM
+#### Option 2: OpenAI Whisper
+
+```env
+PARAKEET_BASE_URL=https://api.openai.com/v1
+STT_MODEL=whisper-1
+OPENAI_API_KEY=your_openai_api_key
+```
+
+#### Option 3: Any OpenAI-compatible STT Provider
+
+```env
+PARAKEET_BASE_URL=https://your-stt-provider.com/v1
+STT_MODEL=your-model-name
+```
+
+### LLM (Language Model)
+
+Any OpenAI-compatible provider works. Examples:
+
+**OpenAI:**
+```env
+LLM_PROVIDER=openai
+LLM_BASE_URL=https://api.openai.com/v1
+LLM_MODEL=gpt-4o-mini
+OPENAI_API_KEY=your_openai_api_key
+```
+
+**DeepSeek:**
+```env
 LLM_PROVIDER=deepseek
 LLM_BASE_URL=https://api.deepseek.com
 LLM_MODEL=deepseek-chat
 OPENAI_API_KEY=your_deepseek_api_key
-
-# KaniTTS
-KANI_BASE_URL=http://localhost:8000/v1
-TTS_MODEL=nineninesix/kani-tts-400m-es
-TTS_VOICE=andrew
 ```
 
-**Example 2: Fully Local Setup (Parakeet STT + Ollama + KaniTTS)**
+**Ollama (Local):**
+```bash
+ollama pull qwen2.5:7b-instruct
+ollama serve
+```
 ```env
-# .env.local
-LIVEKIT_API_KEY=your_key
-LIVEKIT_API_SECRET=your_secret
-LIVEKIT_URL=wss://your-project.livekit.cloud
-
-# Local Parakeet STT
-PARAKEET_BASE_URL=http://localhost:5092/v1
-STT_MODEL=parakeet-tdt-0.6b-v3
-
-# Ollama LLM
 LLM_PROVIDER=ollama
 LLM_BASE_URL=http://localhost:11434/v1
 LLM_MODEL=qwen2.5:7b-instruct
 OPENAI_API_KEY=not-needed
-
-# KaniTTS
-KANI_BASE_URL=http://localhost:8000/v1
-TTS_MODEL=nineninesix/kani-tts-400m-es
-TTS_VOICE=andrew
 ```
 
-**Example 3: Local STT + vLLM for Performance + KaniTTS**
+**vLLM (Local):**
+```bash
+pip install vllm
+python -m vllm.entrypoints.openai.api_server \
+    --model Qwen/Qwen2.5-7B-Instruct --port 8001
+```
 ```env
-# .env.local
-LIVEKIT_API_KEY=your_key
-LIVEKIT_API_SECRET=your_secret
-LIVEKIT_URL=wss://your-project.livekit.cloud
-
-# Local Parakeet STT
-PARAKEET_BASE_URL=http://localhost:5092/v1
-STT_MODEL=parakeet-tdt-0.6b-v3
-
 LLM_PROVIDER=vllm
 LLM_BASE_URL=http://localhost:8001/v1
 LLM_MODEL=Qwen/Qwen2.5-7B-Instruct
 OPENAI_API_KEY=not-needed
-
-KANI_BASE_URL=http://localhost:8000/v1
-TTS_MODEL=nineninesix/kani-tts-400m-es
-TTS_VOICE=andrew
 ```
 
-**Example 4: Local STT + Cloud OpenAI + Local TTS**
+### TTS (Text-to-Speech)
+
+#### Option 1: OpenAI TTS
+
 ```env
-# .env.local
-LIVEKIT_API_KEY=your_key
-LIVEKIT_API_SECRET=your_secret
-LIVEKIT_URL=wss://your-project.livekit.cloud
+KANI_BASE_URL=https://api.openai.com/v1
+TTS_MODEL=tts-1
+TTS_VOICE=alloy
+OPENAI_API_KEY=your_openai_api_key
+```
 
-# Local Parakeet STT
-PARAKEET_BASE_URL=http://localhost:5092/v1
-STT_MODEL=parakeet-tdt-0.6b-v3
+#### Option 2: Local KaniTTS (Spanish)
 
-# OpenAI LLM
-LLM_PROVIDER=openai
-LLM_MODEL=gpt-4o-mini
-OPENAI_API_KEY=your_openai_key
-
-# KaniTTS
+```bash
+git clone https://github.com/nineninesix-ai/kanitts-vllm.git
+cd kanitts-vllm
+pip install -r requirements.txt
+python server.py --model nineninesix/kani-tts-400m-es --port 8000
+```
+```env
 KANI_BASE_URL=http://localhost:8000/v1
 TTS_MODEL=nineninesix/kani-tts-400m-es
 TTS_VOICE=andrew
 ```
+
+#### Option 3: Any OpenAI-compatible TTS Provider
+
+```env
+KANI_BASE_URL=https://your-tts-provider.com/v1
+TTS_MODEL=your-model-name
+TTS_VOICE=your-voice-name
+```
+
+## Usage
 
 ### Development Mode
-
-Run the agent in development mode (connects to LiveKit Cloud):
-
 ```bash
 uv run agent.py dev
 ```
 
-This starts the agent and connects it to your LiveKit server. You can interact with it via:
-- [LiveKit Agents Playground](https://cloud.livekit.io/projects/p_/agents)
-- Your own web/mobile frontend
-- Telephony integration
-
-### Console Mode
-
-Test the agent locally in your terminal without LiveKit connection:
-
+### Console Mode (Local Testing)
 ```bash
 uv run agent.py console
 ```
 
 ### Production Mode
-
-Run the agent in production:
-
 ```bash
 uv run agent.py start
 ```
 
-## Local Model Deployment Guide
-
-For detailed instructions on deploying all models locally (LLM + TTS), see the [DEPLOYMENT.md](DEPLOYMENT.md) guide.
-
-Quick overview of supported providers:
-
-### Local LLM Setup
-
-This agent supports multiple LLM backends, all using OpenAI-compatible APIs. Choose the option that best fits your needs:
-
-#### Option 1: vLLM (Recommended for Performance)
-
-vLLM provides high-throughput serving for LLMs with optimized performance.
-
-**Installation:**
-```bash
-pip install vllm
-```
-
-**Deploy Qwen 2.5 Instruct:**
-```bash
-# Start vLLM server with Qwen 2.5 7B Instruct
-python -m vllm.entrypoints.openai.api_server \
-    --model Qwen/Qwen2.5-7B-Instruct \
-    --port 8001 \
-    --served-model-name Qwen/Qwen2.5-7B-Instruct
-
-# For smaller models (3B):
-# python -m vllm.entrypoints.openai.api_server \
-#     --model Qwen/Qwen2.5-3B-Instruct \
-#     --port 8001
-```
-
-**Configuration in `.env.local`:**
-```env
-LLM_PROVIDER=vllm
-LLM_BASE_URL=http://localhost:8001/v1
-LLM_MODEL=Qwen/Qwen2.5-7B-Instruct
-OPENAI_API_KEY=not-needed
-```
-
-#### Option 2: Ollama (Easiest Setup)
-
-Ollama provides the simplest way to run local LLMs.
-
-**Installation:**
-Visit [ollama.ai](https://ollama.ai/) and follow the installation instructions for your OS.
-
-**Deploy Qwen 2.5 Instruct:**
-```bash
-# Pull and run Qwen 2.5 7B Instruct
-ollama pull qwen2.5:7b-instruct
-
-# Start Ollama server (usually runs automatically)
-ollama serve
-```
-
-**Configuration in `.env.local`:**
-```env
-LLM_PROVIDER=ollama
-LLM_BASE_URL=http://localhost:11434/v1
-LLM_MODEL=qwen2.5:7b-instruct
-OPENAI_API_KEY=not-needed
-```
-
-**Note:** Ollama requires OpenAI compatibility to be enabled. Make sure you're using Ollama v0.1.0 or later which includes the `/v1` OpenAI-compatible endpoint.
-
-#### Option 3: LM Studio (Best for Desktop)
-
-LM Studio provides a user-friendly desktop application for running local LLMs.
-
-**Installation:**
-1. Download LM Studio from [lmstudio.ai](https://lmstudio.ai/)
-2. Install and launch the application
-3. Download a model (search for "Qwen 2.5 Instruct" in the app)
-4. Start the local server from the "Local Server" tab (default port: 1234)
-
-**Configuration in `.env.local`:**
-```env
-LLM_PROVIDER=lmstudio
-LLM_BASE_URL=http://localhost:1234/v1
-LLM_MODEL=qwen2.5-7b-instruct
-OPENAI_API_KEY=not-needed
-```
-
-**Note:** The exact model name may vary based on what you've loaded in LM Studio. Check the "Local Server" tab for the correct model identifier.
-
-### Custom TTS Server (KaniTTS Spanish Model)
-
-This project uses the KaniTTS Spanish model (`nineninesix/kani-tts-400m-es`) for text-to-speech, deployed via an OpenAI-compatible server.
-
-**Setup KaniTTS Server:**
-
-1. Clone the KaniTTS vLLM repository:
-```bash
-git clone https://github.com/nineninesix-ai/kanitts-vllm.git
-cd kanitts-vllm
-```
-
-2. Install dependencies:
-```bash
-pip install -r requirements.txt
-```
-
-3. Start the TTS server with the Spanish model:
-```bash
-python server.py --model nineninesix/kani-tts-400m-es --port 8000
-```
-
-4. The server will be available at `http://localhost:8000/v1`
-
-**Configuration in `.env.local`:**
-```env
-KANI_BASE_URL=http://localhost:8000/v1
-TTS_MODEL=nineninesix/kani-tts-400m-es
-TTS_VOICE=andrew
-```
-
-**Verify TTS Server:**
-```bash
-curl http://localhost:8000/v1/audio/speech \
-  -H "Content-Type: application/json" \
-  -d '{
-    "model": "nineninesix/kani-tts-400m-es",
-    "input": "Hola, soy tu asistente de voz.",
-    "voice": "andrew"
-  }' \
-  --output test.wav
-```
-
-Check our reference implementation: https://github.com/nineninesix-ai/kanitts-vllm
-
-### Audio Models Configuration
-
-Current configuration:
-- **STT**: Parakeet TDT 0.6B v3 - Local, ultra-fast (~30x real-time), 25-language support
-- **LLM**: Configurable (DeepSeek, OpenAI, vLLM, Ollama, or LM Studio)
-- **TTS**: KaniTTS Spanish model (nineninesix/kani-tts-400m-es)
-- **VAD**: Silero VAD
-- **Turn Detection**: Multilingual model
-- **Noise Cancellation**: BVC (recommended for telephony)
-
-## Telephony Applications
-
-For telephony use cases, the agent uses BVC (Background Voice Cancellation) noise cancellation. For even better results with telephone audio, consider using `BVCTelephony`:
-
-```python
-room_input_options=RoomInputOptions(
-    noise_cancellation=noise_cancellation.BVCTelephony(),
-)
-```
-
 ## Deployment
 
-### Deploy to LiveKit Cloud
-
-To deploy your agent to LiveKit Cloud for production use:
+Deploy to LiveKit Cloud:
 
 ```bash
 lk agent create
 ```
 
-This command will:
-- Automatically generate `Dockerfile`, `.dockerignore`, and `livekit.toml` configuration files
-- Register your agent with your LiveKit Cloud project
-- Deploy the containerized agent to the cloud
+This automatically:
+- Generates Dockerfile and configuration files
+- Registers your agent with LiveKit Cloud
+- Deploys the containerized agent
 
-**Prerequisites for deployment:**
-- LiveKit CLI authenticated with your cloud account (`lk cloud auth`)
-- All environment variables configured in your LiveKit Cloud project settings
+For self-hosted deployments, see [LiveKit documentation](https://docs.livekit.io/agents/).
 
-After deployment, your agent will be available through:
-- [LiveKit Agents Playground](https://cloud.livekit.io/projects/p_/agents)
-- Your custom web/mobile applications. Check our web embed app example here: https://github.com/nineninesix-ai/voice-agent-web-embed
-- Telephony integrations
+## Troubleshooting
 
-**Note:** For self-hosted production environments, refer to the [LiveKit documentation](https://docs.livekit.io/agents/) for custom deployment configurations.
+**Agent won't start:**
+- Verify all environment variables in `.env.local`
+- Check API keys are valid
+- Ensure required services are running (Docker for local STT, etc.)
+
+**STT not working:**
+- For local: `curl http://localhost:5092/health`
+- Check Docker logs: `docker compose logs parakeet-stt`
+- Verify `PARAKEET_BASE_URL` is correct
+
+**LLM not responding:**
+- Test endpoint: `curl http://your-llm-url/v1/models`
+- Check API key and credits (for cloud providers)
+- For local: ensure server is running
+
+**TTS not working:**
+- Test endpoint: `curl http://your-tts-url/v1/audio/speech`
+- Check server logs for errors
+- Verify OpenAI-compatible API implementation
+
+## Advanced Configuration
+
+### Using Different Providers per Component
+
+You can mix and match providers:
+
+```env
+# Local STT for privacy
+PARAKEET_BASE_URL=http://localhost:5092/v1
+STT_MODEL=parakeet-tdt-0.6b-v3
+
+# Cloud LLM for quality
+LLM_BASE_URL=https://api.openai.com/v1
+LLM_MODEL=gpt-4o-mini
+OPENAI_API_KEY=your_openai_key
+
+# Local TTS for cost savings
+KANI_BASE_URL=http://localhost:8000/v1
+TTS_MODEL=nineninesix/kani-tts-400m-es
+TTS_VOICE=andrew
+```
+
+### Anthropic Claude Support
+
+```env
+# Use an OpenAI-to-Anthropic adapter or compatible proxy
+LLM_BASE_URL=https://api.anthropic.com/v1
+LLM_MODEL=claude-3-5-sonnet-20241022
+OPENAI_API_KEY=your_anthropic_api_key
+```
+
+### Custom API Endpoints
+
+Any service implementing the OpenAI API specification will work:
+
+```env
+# Your custom STT endpoint
+PARAKEET_BASE_URL=https://my-custom-stt.example.com/v1
+STT_MODEL=my-model
+
+# Your custom LLM endpoint  
+LLM_BASE_URL=https://my-custom-llm.example.com/v1
+LLM_MODEL=my-model
+
+# Your custom TTS endpoint
+KANI_BASE_URL=https://my-custom-tts.example.com/v1
+TTS_MODEL=my-model
+TTS_VOICE=my-voice
+```
 
 ## Resources
 
@@ -608,46 +372,6 @@ After deployment, your agent will be available through:
 - [Parakeet TDT Model](https://huggingface.co/nvidia/parakeet-tdt-0.6b-v3)
 - [OpenAI API Documentation](https://platform.openai.com/docs/)
 
-## Troubleshooting
-
-**Agent won't start:**
-- Verify all environment variables are set correctly in `.env.local`
-- Ensure model files are downloaded: `uv run agent.py download-files`
-- Check that your API keys are valid (or set to "not-needed" for local LLMs)
-- Ensure Parakeet STT service is running: `docker compose ps`
-
-**STT not working:**
-- Verify Parakeet STT service is running: `curl http://localhost:5092/health`
-- Check Docker logs: `docker compose logs parakeet-stt`
-- Ensure port 5092 is not in use by another service
-- Verify `PARAKEET_BASE_URL` is correctly set in `.env.local`
-
-**No audio in/out:**
-- Verify your microphone/speaker permissions
-- Check LiveKit room configuration
-- Ensure noise cancellation is properly configured
-
-**TTS not working:**
-- Ensure your local KaniTTS server is running on port 8000 (or configured port)
-- Check server logs for errors
-- Verify the server implements OpenAI-compatible API
-- Test the TTS endpoint with curl (see Configuration section)
-
-**LLM not responding:**
-- For local LLMs, ensure the server is running:
-  - vLLM: Check `http://localhost:8001/v1/models`
-  - Ollama: Check `http://localhost:11434/v1/models`
-  - LM Studio: Verify server is started in the application
-- Check `LLM_BASE_URL` is correctly set in `.env.local`
-- Verify the model name matches what's deployed
-- For OpenAI, check your API key is valid and has credits
-
-**Model loading issues:**
-- Ensure you have enough GPU/CPU memory for the selected model
-- For Qwen 2.5 7B: Recommended 16GB+ RAM, 8GB+ VRAM
-- For Qwen 2.5 3B: Recommended 8GB+ RAM, 4GB+ VRAM
-- Consider using quantized models (Q4, Q5) for lower memory requirements
-
 ## License
 
-Apache 2. See [LICENSE](LICENSE) file for details.
+Apache 2.0. See [LICENSE](LICENSE) file for details.
