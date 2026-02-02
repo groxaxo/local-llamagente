@@ -102,11 +102,13 @@ if not exist .env.local (
     )
     
     echo.
-    echo You'll need to configure the following API keys in .env.local:
-    echo   1. DEEPGRAM_API_KEY - Get it from: https://console.deepgram.com/
-    echo   2. OPENAI_API_KEY - For DeepSeek, get it from: https://platform.deepseek.com/
+    echo You'll need to configure API keys in .env.local based on your chosen providers:
+    echo   - For OpenAI: Get API key from https://platform.openai.com/
+    echo   - For DeepSeek: Get API key from https://platform.deepseek.com/
+    echo   - For local providers (Ollama, vLLM, etc.): Use 'not-needed'
+    echo   - Local Parakeet STT: No API key required (runs via Docker)
     echo.
-    echo Please edit .env.local and add your API keys before running the agent.
+    echo Please edit .env.local and configure your chosen provider's API key.
 ) else (
     echo [SUCCESS] .env.local already exists
 )
@@ -118,11 +120,12 @@ echo Installation Complete!
 echo =========================================
 echo.
 echo Next steps:
-echo   1. Make sure all API keys are configured in .env.local
-echo   2. Start the agent with: uv run agent.py dev
-echo   3. Open the frontend: start frontend\index.html
+echo   1. Configure API keys in .env.local for your chosen providers
+echo   2. (Optional) Start local STT: docker compose up -d
+echo   3. Start the agent: uv run agent.py dev
+echo   4. Open the frontend: start frontend\index.html
 echo.
-echo For local LLM setup, see DEPLOYMENT.md
+echo For more configuration options, see README.md
 echo.
 echo [SUCCESS] You're all set! Happy building!
 echo.

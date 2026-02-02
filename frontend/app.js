@@ -1,5 +1,5 @@
 // Voice AI Assistant - Frontend Application
-// Powered by LiveKit and DeepSeek Chat
+// Powered by LiveKit and OpenAI-compatible API Providers
 
 class VoiceAssistant {
     constructor() {
@@ -308,7 +308,7 @@ class VoiceAssistant {
             <div class="welcome-message">
                 <div class="welcome-icon">👋</div>
                 <h3>Welcome to Voice AI Assistant</h3>
-                <p>Click "Connect" to start a conversation with the AI assistant powered by DeepSeek.</p>
+                <p>Configure your settings and click "Connect" to start a conversation with the AI assistant.</p>
             </div>
         `;
     }
@@ -419,11 +419,11 @@ class VoiceAssistant {
         this.addMessage('Hello! How can I help you today?', 'assistant');
         
         setTimeout(() => {
-            this.addMessage('Can you tell me about DeepSeek Chat?', 'user');
+            this.addMessage('Can you tell me about this voice assistant?', 'user');
         }, 2000);
         
         setTimeout(() => {
-            this.addMessage('DeepSeek Chat is a powerful language model that provides intelligent, context-aware responses. It\'s designed to assist with a wide range of tasks including coding, analysis, and general conversation.', 'assistant');
+            this.addMessage('This is a voice AI assistant powered by LiveKit Agents framework. It supports any OpenAI-compatible API provider for speech-to-text, language models, and text-to-speech. You can use providers like OpenAI, DeepSeek, local models with Ollama, or any other compatible service.', 'assistant');
         }, 4000);
     }
 }
